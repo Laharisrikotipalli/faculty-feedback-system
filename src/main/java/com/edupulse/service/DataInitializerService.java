@@ -46,11 +46,14 @@ public class DataInitializerService implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (facultyRepo.count() > 0) {
-            System.out.println("✅ Data already initialized, skipping.");
-            return;
+        // ONLY initialize if no faculty exist (first run)
+        if (facultyRepo.count() == 0) {
+            initData();
+        } else {
+            System.out.println("✅ Database already has data. Skipping initialization.");
+            System.out.println("   Faculty count: " + facultyRepo.count());
+            System.out.println("   Assignments count: " + assignmentRepo.count());
         }
-        initData();
     }
 
     private void initData() {
@@ -88,7 +91,7 @@ public class DataInitializerService implements CommandLineRunner {
         }
 
         System.out.println("\n========================================");
-        System.out.println("✅ EduPulse Data Initialized!");
+        System.out.println("✅ EduPulse Data Initialized (First Run)!");
         System.out.println("========================================");
         System.out.println("STAFF LOGINS (Staff tab):");
         System.out.println("  rajesh / pass123   | suresh / pass123");

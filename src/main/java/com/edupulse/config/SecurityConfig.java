@@ -40,12 +40,13 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
             .authorizeHttpRequests(auth -> auth
-                // Public endpoints
-                .requestMatchers("/", "/login", "/css/**", "/js/**", "/images/**", "/error").permitAll()
+                // Public endpoints - No login required for feedback submission
+                .requestMatchers("/", "/login", "/feedback/**", "/css/**", "/js/**", "/images/**", "/error").permitAll()
                 // Principal only endpoints
                 .requestMatchers("/principal/**").hasRole("PRINCIPAL")
                 // Staff only endpoints
                 .requestMatchers("/staff/**").hasRole("STAFF")
+                // All other requests need authentication
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form

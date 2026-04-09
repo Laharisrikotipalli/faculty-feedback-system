@@ -6,42 +6,75 @@ pipeline {
         jdk 'JDK-21'
     }
     
+    environment {
+        DOCKER_IMAGE = 'yourusername/edupulse'
+        SONAR_HOST = 'http://localhost:9000'
+    }
+    
     stages {
         stage('Checkout') {
             steps {
-                echo 'Cloning repository...'
                 checkout scm
             }
         }
         
         stage('Build') {
             steps {
-                echo 'Building application...'
                 bat 'mvn clean package -DskipTests'
             }
         }
         
         stage('Test') {
             steps {
-                echo 'Running tests...'
                 bat 'mvn test'
+            }
+            post {
+                always {
+                    junit 'target/surefire-reports/*.xml'
+                }
             }
         }
         
-        stage('Archive') {
+        stage('SonarQube') {
             steps {
-                echo 'Saving JAR file...'
-                archiveArtifacts artifacts: 'target/*.jar'
+                bat 'mvn sonar:sonar'
+            }
+        }
+        
+        stage('Docker Build') {
+            steps {
+                bat 'docker build -t ${DOCKER_IMAGE}:latest .'
+            }
+        }
+        
+        stage('Docker Push') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker-hub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    bat '''
+                        echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+                        docker push ${DOCKER_IMAGE}:latest
+                    '''
+                }
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                bat 'kubectl apply -f deployment.yaml'
             }
         }
     }
     
     post {
         success {
-            echo 'Build successful!'
+            echo 'Pipeline completed successfully!'
         }
         failure {
-            echo 'Build failed!'
+            echo 'Pipeline failed!'
         }
     }
 }
