@@ -1,23 +1,22 @@
- 
 pipeline {
     agent any
     
     tools {
-        maven 'Maven-3.9'
+        maven 'csemaven'
         jdk 'JDK-21'
     }
     
     stages {
         stage('Checkout') {
             steps {
-                echo 'Cloning repository from GitHub...'
+                echo 'Cloning repository...'
                 checkout scm
             }
         }
         
         stage('Build') {
             steps {
-                echo 'Building with Maven...'
+                echo 'Building application...'
                 bat 'mvn clean package -DskipTests'
             }
         }
@@ -29,20 +28,20 @@ pipeline {
             }
         }
         
-        stage('Archive Artifacts') {
+        stage('Archive') {
             steps {
                 echo 'Saving JAR file...'
-                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                archiveArtifacts artifacts: 'target/*.jar'
             }
         }
     }
     
     post {
         success {
-            echo '✅ Build completed successfully!'
+            echo 'Build successful!'
         }
         failure {
-            echo '❌ Build failed!'
+            echo 'Build failed!'
         }
     }
 }
