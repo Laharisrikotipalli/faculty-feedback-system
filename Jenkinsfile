@@ -7,7 +7,7 @@ pipeline {
     }
     
     environment {
-        DOCKER_IMAGE = 'yourusername/edupulse'
+        DOCKER_IMAGE = 'laharsri/edupulse'
         SONAR_HOST = 'http://localhost:9000'
     }
     
