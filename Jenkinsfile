@@ -6,30 +6,25 @@ pipeline {
         jdk 'JDK-21'
     }
     
-    environment {
-        DOCKER_IMAGE = 'laharisri/edupulse'
-        SONAR_HOST = 'http://localhost:9000'
-    }
-    
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
-                echo 'Code checked out from GitHub'
+                echo 'Code checked out'
             }
         }
         
         stage('Build') {
             steps {
                 bat 'mvn clean package -DskipTests'
-                echo 'Build completed successfully'
+                echo 'Build completed'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    bat 'mvn sonar:sonar -Dsonar.projectKey=edupulse -Dsonar.host.url=http://localhost:9000'
+                    bat 'mvn sonar:sonar'
                 }
                 echo 'SonarQube analysis completed'
             }
@@ -46,14 +41,14 @@ pipeline {
             steps {
                 bat 'docker build -t edupulse:latest .'
                 bat 'docker tag edupulse:latest laharisri/edupulse:latest'
-                echo 'Docker image built and tagged'
+                echo 'Docker image built'
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
                 bat 'docker push laharisri/edupulse:latest'
-                echo 'Docker image pushed to Docker Hub'
+                echo 'Docker image pushed'
             }
         }
     }
@@ -62,8 +57,6 @@ pipeline {
         success {
             echo 'Pipeline completed successfully'
             echo 'Docker Image: laharisri/edupulse:latest'
-            echo 'Docker Hub: https://hub.docker.com/r/laharisri/edupulse'
-            echo 'Local URL: http://localhost:8087'
         }
         failure {
             echo 'Pipeline failed. Check the Console Output for details.'
